@@ -82,6 +82,8 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL10;
 
+import chat.wai.ui.WaiIndexActivity;
+
 public class IntroActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
     private final static int ICON_WIDTH_DP = 200, ICON_HEIGHT_DP = 150;
 
@@ -122,20 +124,22 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
         MessagesController.getGlobalMainSettings().edit().putLong("intro_crashed_time", System.currentTimeMillis()).apply();
 
         titles = new String[]{
-                LocaleController.getString("Page1Title", R.string.Page1Title),
-                LocaleController.getString("Page2Title", R.string.Page2Title),
-                LocaleController.getString("Page3Title", R.string.Page3Title),
-                LocaleController.getString("Page5Title", R.string.Page5Title),
-                LocaleController.getString("Page4Title", R.string.Page4Title),
-                LocaleController.getString("Page6Title", R.string.Page6Title)
+//                LocaleController.getString("Page1Title", R.string.Page1Title),
+//                LocaleController.getString("Page2Title", R.string.Page2Title),
+//                LocaleController.getString("Page3Title", R.string.Page3Title),
+//                LocaleController.getString("Page5Title", R.string.Page5Title),
+//                LocaleController.getString("Page4Title", R.string.Page4Title),
+//                LocaleController.getString("Page6Title", R.string.Page6Title),
+                "Wai Chat"
         };
         messages = new String[]{
-                LocaleController.getString("Page1Message", R.string.Page1Message),
-                LocaleController.getString("Page2Message", R.string.Page2Message),
-                LocaleController.getString("Page3Message", R.string.Page3Message),
-                LocaleController.getString("Page5Message", R.string.Page5Message),
-                LocaleController.getString("Page4Message", R.string.Page4Message),
-                LocaleController.getString("Page6Message", R.string.Page6Message)
+//                LocaleController.getString("Page1Message", R.string.Page1Message),
+//                LocaleController.getString("Page2Message", R.string.Page2Message),
+//                LocaleController.getString("Page3Message", R.string.Page3Message),
+//                LocaleController.getString("Page5Message", R.string.Page5Message),
+//                LocaleController.getString("Page4Message", R.string.Page4Message),
+//                LocaleController.getString("Page6Message", R.string.Page6Message),
+                "Make you life better"
         };
         return true;
     }
@@ -341,7 +345,8 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
                 }
             }
         };
-        startMessagingButton.setText(LocaleController.getString("StartMessaging", R.string.StartMessaging));
+        startMessagingButton.setText("开始对话");
+//        startMessagingButton.setText(LocaleController.getString("StartMessaging", R.string.StartMessaging));
         startMessagingButton.setGravity(Gravity.CENTER);
         startMessagingButton.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         startMessagingButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
@@ -353,12 +358,14 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
             }
             startPressed = true;
 
-            presentFragment(new LoginActivity().setIntroView(frameContainerView, startMessagingButton), true);
+//            ((LaunchActivity) getParentActivity()).showPasscodeActivity(true, false, -1, -1, null, null);
+            presentFragment(new WaiIndexActivity(),true);
+//            presentFragment(new LoginActivity().setIntroView(frameContainerView, startMessagingButton), true);
             destroyed = true;
         });
 
         bottomPages = new BottomPagesView(context, viewPager, 6);
-        frameContainerView.addView(bottomPages, LayoutHelper.createFrame(66, 5, Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, ICON_HEIGHT_DP + 200, 0, 0));
+//        frameContainerView.addView(bottomPages, LayoutHelper.createFrame(66, 5, Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, ICON_HEIGHT_DP + 200, 0, 0));
 
         switchLanguageTextView = new TextView(context);
         switchLanguageTextView.setGravity(Gravity.CENTER);

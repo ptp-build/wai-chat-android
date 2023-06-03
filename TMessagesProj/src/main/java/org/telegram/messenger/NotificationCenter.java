@@ -27,6 +27,8 @@ public class NotificationCenter {
     private final static long EXPIRE_NOTIFICATIONS_TIME = 5017;
     private static int totalEvents = 1;
 
+    public static final int waiAppInit = totalEvents++;
+
     public static final int didReceiveNewMessages = totalEvents++;
     public static final int updateInterfaces = totalEvents++;
     public static final int dialogsNeedReload = totalEvents++;

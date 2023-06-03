@@ -4,3 +4,7 @@ build/
 obj/
 *.iml
 local.properties
+.DS_Store
+.cxx/
+google-services.json
+TMessagesProj/src/main/assets/wai/

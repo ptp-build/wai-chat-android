@@ -5534,7 +5534,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     @Override
     protected void onStart() {
         super.onStart();
-        Browser.bindCustomTabsService(this);
+//        Browser.bindCustomTabsService(this);
         ApplicationLoader.mainInterfaceStopped = false;
         GroupCallPip.updateVisibility(this);
         if (GroupCallActivity.groupCallInstance != null) {

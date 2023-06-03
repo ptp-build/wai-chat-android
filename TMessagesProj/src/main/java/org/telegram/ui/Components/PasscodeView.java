@@ -930,41 +930,41 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
     }
 
     private void processDone(boolean fingerprint) {
-        if (!fingerprint) {
-            if (SharedConfig.passcodeRetryInMs > 0) {
-                return;
-            }
-            String password = "";
-            if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN) {
-                password = passwordEditText2.getString();
-            } else if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD) {
-                password = passwordEditText.getText().toString();
-            }
-            if (password.length() == 0) {
-                onPasscodeError();
-                return;
-            }
-            if (!SharedConfig.checkPasscode(password)) {
-                SharedConfig.increaseBadPasscodeTries();
-                if (SharedConfig.passcodeRetryInMs > 0) {
-                    checkRetryTextView();
-                }
-                passwordEditText.setText("");
-                passwordEditText2.eraseAllCharacters(true);
-                onPasscodeError();
-                if (backgroundDrawable instanceof MotionBackgroundDrawable) {
-                    MotionBackgroundDrawable motionBackgroundDrawable = (MotionBackgroundDrawable) backgroundDrawable;
-                    if (backgroundAnimationSpring != null) {
-                        backgroundAnimationSpring.cancel();
-                        motionBackgroundDrawable.setPosAnimationProgress(1f);
-                    }
-                    if (motionBackgroundDrawable.getPosAnimationProgress() >= 1f) {
-                        motionBackgroundDrawable.rotatePreview(true);
-                    }
-                }
-                return;
-            }
-        }
+//        if (!fingerprint) {
+//            if (SharedConfig.passcodeRetryInMs > 0) {
+//                return;
+//            }
+//            String password = "";
+//            if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN) {
+//                password = passwordEditText2.getString();
+//            } else if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD) {
+//                password = passwordEditText.getText().toString();
+//            }
+//            if (password.length() == 0) {
+//                onPasscodeError();
+//                return;
+//            }
+//            if (!SharedConfig.checkPasscode(password)) {
+//                SharedConfig.increaseBadPasscodeTries();
+//                if (SharedConfig.passcodeRetryInMs > 0) {
+//                    checkRetryTextView();
+//                }
+//                passwordEditText.setText("");
+//                passwordEditText2.eraseAllCharacters(true);
+//                onPasscodeError();
+//                if (backgroundDrawable instanceof MotionBackgroundDrawable) {
+//                    MotionBackgroundDrawable motionBackgroundDrawable = (MotionBackgroundDrawable) backgroundDrawable;
+//                    if (backgroundAnimationSpring != null) {
+//                        backgroundAnimationSpring.cancel();
+//                        motionBackgroundDrawable.setPosAnimationProgress(1f);
+//                    }
+//                    if (motionBackgroundDrawable.getPosAnimationProgress() >= 1f) {
+//                        motionBackgroundDrawable.rotatePreview(true);
+//                    }
+//                }
+//                return;
+//            }
+//        }
         SharedConfig.badPasscodeTries = 0;
         passwordEditText.clearFocus();
         AndroidUtilities.hideKeyboard(passwordEditText);
@@ -975,7 +975,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
         SharedConfig.appLocked = false;
         SharedConfig.saveConfig();
-        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.didSetPasscode);
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.didSetPasscode,passwordEditText2.getString());
         setOnTouchListener(null);
         if (delegate != null) {
             delegate.didAcceptedPassword(this);
