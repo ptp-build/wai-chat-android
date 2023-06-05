@@ -6,5 +6,7 @@ obj/
 local.properties
 .DS_Store
 .cxx/
+*.aab
+
 google-services.json
 TMessagesProj/src/main/assets/wai/
