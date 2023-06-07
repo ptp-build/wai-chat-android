@@ -1,5 +1,7 @@
 package chat.wai.ui.components;
 
+import static chat.wai.ui.helpers.WaiUtils.convertInputStreamToString;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
@@ -25,71 +27,18 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.ui.ActionBar.Theme;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 @SuppressLint("ViewConstructor")
 public class IWebView extends WebView {
   public boolean mPreventParentTouch = false;
   public static boolean loaded = false;
 
-
-  public static String getFileContent(String fileName){
-    StringBuilder content = new StringBuilder();
-    try {
-      InputStream stream = ApplicationLoader.applicationContext.getResources().getAssets().open(fileName);
-      BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-      String line;
-      while ((line = reader.readLine()) != null) {
-        content.append(line);
-      }
-      reader.close();
-      stream.close();
-      return content.toString();
-    } catch (Exception e) {
-      FileLog.e(e);
-      return "";
-    }
-  }
-
-  public static String getHtmlContent(String globalData){
-    String content = "";
-    content += "<!DOCTYPE html>\n" +
-      "<html lang=\"en\">\n" +
-      "<head>\n" +
-      "  <meta charset=\"utf-8\" />\n" +
-      "  <meta name=\"viewport\" content=\"initial-scale=1, width=device-width\" />\n" +
-      "  <title>App</title>\n" +
-      "  <style>\n" +
-      "\n" +
-      "    body{}\n" +
-      "    *{\n" +
-      "      user-select: none;\n" +
-      "    }\n" +
-      "  </style>\n" +
-      "</head>\n" +
-      "<body>\n" +
-      "<div id=\"root\"></div>\n" +
-      "</body>\n" +
-      "</html>";
-    content += "<script>";
-    content += "window.__GLOBAL_DATA="+globalData+";";
-    content += getFileContent("pages/chat/static/js/main.js");
-    content += "</script>";
-    return content;
-  }
-  public void preventParentTouchEvent() {
-    mPreventParentTouch = true;
-  }
-
   @Override
   public void onResume() {
     super.onResume();
-    if (loaded) {
-      this.loadUrl("javascript:window.location.reload( true )");
-    }
   }
 
 
@@ -137,16 +86,6 @@ public class IWebView extends WebView {
     try {
       JSONObject object = new JSONObject(eventData);
       switch (eventName) {
-//        case "openAppUrl":
-//          NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.openAppUrl, object.getString("url"), object.getBoolean("innerBrowser"));
-//          break;
-//        case "sendRequest":
-//          NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.sendRequest, object);
-//          break;
-//        case "openActivity":
-//          NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.openActivity, object);
-//          break;
-
         case "SET_THEME":
           Theme.ThemeInfo themeInfo;
           String dayThemeName = "Blue";
@@ -165,9 +104,7 @@ public class IWebView extends WebView {
           break;
       }
 
-    } catch (Throwable ignore) {
-
-    }
+    } catch (Throwable ignore) {}
   }
 
   @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -202,7 +139,27 @@ public class IWebView extends WebView {
         String host = uri.getHost();
 
         String path = uri.getPath();
+        if (path.startsWith("/m/android") && host.contains(BuildVars.FRONT_END_HOST)) {
+          try {
+            String theme = uri.getQueryParameter("theme");
+            String version = uri.getQueryParameter("v");
 
+            InputStream inputStream = ApplicationLoader.applicationContext.getAssets().open("wai/m/index.html");
+            String mimeType = getMimeType(url);
+            String modifiedHtml = "<script>\n" +
+                    "    window.__PLATFORM='android';\n" +
+                    "    window.__THEME='"+theme+"';\n" +
+                    "    window.__FRONT_VERSION='"+version+"';\n" +
+                    "</script>\n";
+            modifiedHtml += convertInputStreamToString(inputStream); // Read the original HTML content
+            inputStream.close();
+
+            ByteArrayInputStream modifiedInputStream = new ByteArrayInputStream(modifiedHtml.getBytes());
+            return new WebResourceResponse(mimeType, null, modifiedInputStream);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
         if (!path.endsWith(".html")
                 && !path.startsWith("/api")
                 && !path.startsWith("/m/android")
@@ -251,24 +208,6 @@ public class IWebView extends WebView {
       public boolean shouldOverrideUrlLoading(WebView view, String url) {
         return isInternalUrl(url) || super.shouldOverrideUrlLoading(view, url);
       }
-
-//
-//      private WebViewAssetLoader webViewAssetLoader = new WebViewAssetLoader.Builder()
-//              .addPathHandler("/sdcard/", new SdcardStoragePathHandler())
-//              .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(context))
-//              //.addPathHandler("/res/", new WebViewAssetLoader.ResourcesPathHandler(context))
-//              .build();
-//      @Override
-//      @RequiresApi(21)
-//      public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-//        return webViewAssetLoader.shouldInterceptRequest(request.getUrl());
-//      }
-
-//      @Override
-//      @SuppressWarnings("deprecation") // for API < 21
-//      public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-//        return webViewAssetLoader.shouldInterceptRequest(Uri.parse(url));
-//      }
 
       @Override
       public void onPageFinished(WebView view, String url) {
