@@ -84,6 +84,7 @@
     </queries>
 
     <application
+        android:usesCleartextTraffic="true"
         android:name="org.telegram.messenger.ApplicationLoader"
         android:allowBackup="true"
         android:restoreAnyVersion="true"

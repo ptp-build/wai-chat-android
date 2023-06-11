@@ -17,4 +17,5 @@ public class WaiUtils {
 		reader.close();
 		return stringBuilder.toString();
 	}
+
 }

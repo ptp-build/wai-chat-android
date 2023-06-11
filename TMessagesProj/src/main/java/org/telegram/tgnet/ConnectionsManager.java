@@ -310,78 +310,78 @@ public class ConnectionsManager extends BaseController {
     }
 
     private void sendRequestInternal(TLObject object, RequestDelegate onComplete, RequestDelegateTimestamp onCompleteTimestamp, QuickAckDelegate onQuickAck, WriteToSocketDelegate onWriteToSocket, int flags, int datacenterId, int connetionType, boolean immediate, int requestToken) {
-        if (BuildVars.LOGS_ENABLED) {
-            FileLog.d("send request " + object + " with token = " + requestToken);
-        }
-        try {
-            NativeByteBuffer buffer = new NativeByteBuffer(object.getObjectSize());
-            object.serializeToStream(buffer);
-            object.freeResources();
-
-            long startRequestTime = 0;
-            if (BuildVars.DEBUG_PRIVATE_VERSION && BuildVars.LOGS_ENABLED) {
-                startRequestTime = System.currentTimeMillis();
-            }
-            long finalStartRequestTime = startRequestTime;
-            native_sendRequest(currentAccount, buffer.address, (response, errorCode, errorText, networkType, timestamp, requestMsgId) -> {
-                try {
-                    TLObject resp = null;
-                    TLRPC.TL_error error = null;
-
-                    if (response != 0) {
-                        NativeByteBuffer buff = NativeByteBuffer.wrap(response);
-                        buff.reused = true;
-                        try {
-                            resp = object.deserializeResponse(buff, buff.readInt32(true), true);
-                        } catch (Exception e2) {
-                            if (BuildVars.DEBUG_PRIVATE_VERSION) {
-                                throw e2;
-                            }
-                            FileLog.fatal(e2);
-                            return;
-                        }
-                    } else if (errorText != null) {
-                        error = new TLRPC.TL_error();
-                        error.code = errorCode;
-                        error.text = errorText;
-                        if (BuildVars.LOGS_ENABLED) {
-                            FileLog.e(object + " got error " + error.code + " " + error.text);
-                        }
-                    }
-                    if (BuildVars.DEBUG_PRIVATE_VERSION && !getUserConfig().isClientActivated() && error != null && error.code == 400 && Objects.equals(error.text, "CONNECTION_NOT_INITED")) {
-                        if (BuildVars.LOGS_ENABLED) {
-                            FileLog.d("Cleanup keys for " + currentAccount + " because of CONNECTION_NOT_INITED");
-                        }
-                        cleanup(true);
-                        sendRequest(object, onComplete, onCompleteTimestamp, onQuickAck, onWriteToSocket, flags, datacenterId, connetionType, immediate);
-                        return;
-                    }
-                    if (resp != null) {
-                        resp.networkType = networkType;
-                    }
-                    if (BuildVars.LOGS_ENABLED) {
-                        FileLog.d("java received " + resp + " error = " + error);
-                    }
-                    FileLog.dumpResponseAndRequest(object, resp, error, requestMsgId, finalStartRequestTime, requestToken);
-                    final TLObject finalResponse = resp;
-                    final TLRPC.TL_error finalError = error;
-                    Utilities.stageQueue.postRunnable(() -> {
-                        if (onComplete != null) {
-                            onComplete.run(finalResponse, finalError);
-                        } else if (onCompleteTimestamp != null) {
-                            onCompleteTimestamp.run(finalResponse, finalError, timestamp);
-                        }
-                        if (finalResponse != null) {
-                            finalResponse.freeResources();
-                        }
-                    });
-                } catch (Exception e) {
-                    FileLog.e(e);
-                }
-            }, onQuickAck, onWriteToSocket, flags, datacenterId, connetionType, immediate, requestToken);
-        } catch (Exception e) {
-            FileLog.e(e);
-        }
+//        if (BuildVars.LOGS_ENABLED) {
+//            FileLog.d("send request " + object + " with token = " + requestToken);
+//        }
+//        try {
+//            NativeByteBuffer buffer = new NativeByteBuffer(object.getObjectSize());
+//            object.serializeToStream(buffer);
+//            object.freeResources();
+//
+//            long startRequestTime = 0;
+//            if (BuildVars.DEBUG_PRIVATE_VERSION && BuildVars.LOGS_ENABLED) {
+//                startRequestTime = System.currentTimeMillis();
+//            }
+//            long finalStartRequestTime = startRequestTime;
+//            native_sendRequest(currentAccount, buffer.address, (response, errorCode, errorText, networkType, timestamp, requestMsgId) -> {
+//                try {
+//                    TLObject resp = null;
+//                    TLRPC.TL_error error = null;
+//
+//                    if (response != 0) {
+//                        NativeByteBuffer buff = NativeByteBuffer.wrap(response);
+//                        buff.reused = true;
+//                        try {
+//                            resp = object.deserializeResponse(buff, buff.readInt32(true), true);
+//                        } catch (Exception e2) {
+//                            if (BuildVars.DEBUG_PRIVATE_VERSION) {
+//                                throw e2;
+//                            }
+//                            FileLog.fatal(e2);
+//                            return;
+//                        }
+//                    } else if (errorText != null) {
+//                        error = new TLRPC.TL_error();
+//                        error.code = errorCode;
+//                        error.text = errorText;
+//                        if (BuildVars.LOGS_ENABLED) {
+//                            FileLog.e(object + " got error " + error.code + " " + error.text);
+//                        }
+//                    }
+//                    if (BuildVars.DEBUG_PRIVATE_VERSION && !getUserConfig().isClientActivated() && error != null && error.code == 400 && Objects.equals(error.text, "CONNECTION_NOT_INITED")) {
+//                        if (BuildVars.LOGS_ENABLED) {
+//                            FileLog.d("Cleanup keys for " + currentAccount + " because of CONNECTION_NOT_INITED");
+//                        }
+//                        cleanup(true);
+//                        sendRequest(object, onComplete, onCompleteTimestamp, onQuickAck, onWriteToSocket, flags, datacenterId, connetionType, immediate);
+//                        return;
+//                    }
+//                    if (resp != null) {
+//                        resp.networkType = networkType;
+//                    }
+//                    if (BuildVars.LOGS_ENABLED) {
+//                        FileLog.d("java received " + resp + " error = " + error);
+//                    }
+//                    FileLog.dumpResponseAndRequest(object, resp, error, requestMsgId, finalStartRequestTime, requestToken);
+//                    final TLObject finalResponse = resp;
+//                    final TLRPC.TL_error finalError = error;
+//                    Utilities.stageQueue.postRunnable(() -> {
+//                        if (onComplete != null) {
+//                            onComplete.run(finalResponse, finalError);
+//                        } else if (onCompleteTimestamp != null) {
+//                            onCompleteTimestamp.run(finalResponse, finalError, timestamp);
+//                        }
+//                        if (finalResponse != null) {
+//                            finalResponse.freeResources();
+//                        }
+//                    });
+//                } catch (Exception e) {
+//                    FileLog.e(e);
+//                }
+//            }, onQuickAck, onWriteToSocket, flags, datacenterId, connetionType, immediate, requestToken);
+//        } catch (Exception e) {
+//            FileLog.e(e);
+//        }
     }
 
     public void cancelRequest(int token, boolean notifyServer) {

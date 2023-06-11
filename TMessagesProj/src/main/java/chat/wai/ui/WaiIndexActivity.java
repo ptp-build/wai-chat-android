@@ -12,8 +12,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
@@ -21,7 +23,7 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import androidx.core.graphics.ColorUtils;
-
+import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
@@ -33,6 +35,8 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
+import org.telegram.ui.BasePermissionsActivity;
+import org.telegram.ui.Components.ImageUpdater;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.SimpleThemeDescription;
 
@@ -43,26 +47,20 @@ import java.util.ArrayList;
 import chat.wai.ui.components.IWebView;
 import chat.wai.ui.helpers.WaiUtils;
 
-public class WaiIndexActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
-
+public class WaiIndexActivity extends BaseActivity implements NotificationCenter.NotificationCenterDelegate{
     private IWebView webView;
     private String currentUrl;
 
     private AlertDialog loadingDialog;
     @Override
     public boolean onFragmentCreate() {
-        if (Build.VERSION.SDK_INT >= 23 && getParentActivity() != null) {
-            if (getParentActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                getParentActivity().requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 3);
-                return true;
-            }
-        }
+
         return true;
     }
-
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     public View createView(Context context) {
+        requestPermission();
         parentLayout.getDrawerLayoutContainer().setAllowOpenDrawer(false,false);
         actionBar.setAddToContainer(false);
         String v = "";
@@ -83,6 +81,7 @@ public class WaiIndexActivity extends BaseFragment implements NotificationCenter
         FrameLayout frameLayout = (FrameLayout) fragmentView;
 
 
+        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.onActivityResultReceived);
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.needSetDayNightTheme);
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.waiAppInit);
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.suggestedLangpack);
@@ -92,8 +91,8 @@ public class WaiIndexActivity extends BaseFragment implements NotificationCenter
 
         updateColors(false);
         webView = new IWebView(context);
-
         webView.loadUrl(currentUrl);
+        webView.setActivity(this);
 
         frameLayout.addView(webView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT,0, AndroidUtilities.dp(14),0,0));
 
@@ -103,6 +102,16 @@ public class WaiIndexActivity extends BaseFragment implements NotificationCenter
         return fragmentView;
     }
 
+    @Override
+    public void showLoading(boolean loading){
+        if(loadingDialog != null){
+            if(loading){
+                loadingDialog.show();
+            }else{
+                loadingDialog.dismiss();
+            }
+        }
+    }
     public static boolean supportWebview() {
         String manufacturer = Build.MANUFACTURER;
         String model = Build.MODEL;
@@ -173,6 +182,7 @@ public class WaiIndexActivity extends BaseFragment implements NotificationCenter
         } catch (Exception e) {
             FileLog.e(e);
         }
+        NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.onActivityResultReceived);
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.needSetDayNightTheme);
         NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.waiAppInit);
         NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.didSetPasscode);
@@ -194,13 +204,14 @@ public class WaiIndexActivity extends BaseFragment implements NotificationCenter
         if(id == NotificationCenter.didSetPasscode){
 
         }
+        if (id == NotificationCenter.onActivityResultReceived) {
+            webView.onActivityResult((int) args[0], (int) args[1], (Intent) args[2]);
+        }
         if(id == NotificationCenter.needSetDayNightTheme){
             webView.postEvent("setIsCurrentThemeLight",Theme.isCurrentThemeDay());
         }
         if(id == NotificationCenter.waiAppInit){
-            if(loadingDialog != null){
-                loadingDialog.dismiss();
-            }
+
         }
     }
     @Override
@@ -226,4 +237,5 @@ public class WaiIndexActivity extends BaseFragment implements NotificationCenter
         int color = Theme.getColor(Theme.key_windowBackgroundWhite, null, true);
         return ColorUtils.calculateLuminance(color) > 0.7f;
     }
+
 }
